@@ -1,4 +1,3 @@
-/* Accent Color and Theme Setup */
 html {
   color-scheme: light dark;
   --color-accent: oklch(65% 50% 0);
@@ -7,10 +6,9 @@ html {
 
 body {
   font: 100%/1.5 system-ui;
-  /* Removed hardcoded background-color and color — let color-scheme handle it
-     so dark mode works correctly */
   max-width: 100ch;
   margin-inline: max(1em, (100% - 100ch) / 2);
+  position: relative;
 }
 
 h1 {
@@ -52,7 +50,6 @@ nav a:hover {
   background-color: color-mix(in oklch, var(--color-accent), canvas 85%);
 }
 
-/* Theme Switcher Placement */
 .color-scheme {
   position: absolute;
   top: 1rem;
@@ -86,18 +83,18 @@ label {
 button {
   grid-column: 1 / -1;
   padding: 10px;
-  background: #111;
-  color: white;
+  background-color: canvastext;
+  color: canvas;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 }
 
 button:hover {
-  background: var(--color-accent);
+  background-color: var(--color-accent);
+  color: canvas;
 }
 
-/* Projects Page Layout */
 .projects {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(15em, 1fr));
