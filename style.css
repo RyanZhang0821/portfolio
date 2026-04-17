@@ -1,88 +1,64 @@
-/* Step 2.4 & 4.1: Accent Color and Theme Setup */
+/* Accent Color and Theme Setup */
 html {
-  /* Step 4.1: Tell the browser we support light and dark mode [cite: 214, 215] */
   color-scheme: light dark;
-  /* Define an accent color for your website */
   --color-accent: oklch(65% 50% 0);
-  /* Make the custom property available to the entire document */
   accent-color: var(--color-accent);
 }
 
 body {
   font: 100%/1.5 system-ui;
-  background-color: #f9fafb;
-  color: #111;
-  /* Step 1: Prevent content from getting too wide */
+  /* Removed hardcoded background-color and color — let color-scheme handle it
+     so dark mode works correctly */
   max-width: 100ch;
-  /* Center the content by specifying a lower bound for margin */
   margin-inline: max(1em, (100% - 100ch) / 2);
 }
 
-/* Step 4.4: Typography enhancements */
 h1 {
-  /* Make the heading significantly larger for contrast */
   font-size: 400%;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  /* Provide good defaults for line-height and prevent uneven lines */
   line-height: 1.1;
   text-wrap: balance;
 }
 
-/* Step 2 & 4.1: Styling the navigation bar */
 nav {
-  /* Use Flexbox to control the layout */
   display: flex;
-  /* Apply margin-bottom to separate it from the content below */
   margin-bottom: 2em;
-  
-  /* Step 4.1: Adaptive border color for dark/light mode [cite: 236, 237] */
   --border-color: oklch(50% 10% 200 / 40%);
-  border-bottom: 1px solid var(--border-color); /* [cite: 242, 243] */
+  border-bottom: 1px solid var(--border-color);
 }
 
 nav ul {
-  /* Prevent lists from having styling of their own */
-  display: contents; 
+  display: contents;
 }
 
 nav a {
-  /* Make links take up the same amount of space */
   flex: 1;
-  /* Remove the underline from links */
   text-decoration: none;
-  /* Make links use the same text color as their parent element */
   color: inherit;
-  /* Center the text in its box */
   text-align: center;
-  /* Give each link some spacing */
   padding: 0.5em;
 }
 
-/* Step 2.3 & 2.4: Current page and hover styles */
 nav a.current {
-  /* Give the current page link a thick bottom border using the adaptive color [cite: 242, 243] */
   border-bottom: 0.4em solid var(--border-color);
-  /* Counter the increase in height by reducing padding-bottom */
   padding-bottom: 0.1em;
 }
 
 nav a:hover {
-  /* Use the accent color to style hovered navigation links */
   border-bottom: 0.4em solid var(--color-accent);
   padding-bottom: 0.1em;
-  /* Step 4.1: Mix background color with canvas color so it's readable in dark mode [cite: 267, 268] */
   background-color: color-mix(in oklch, var(--color-accent), canvas 85%);
 }
 
-/* Step 4.3: Theme Switcher Placement [cite: 303, 304] */
+/* Theme Switcher Placement */
 .color-scheme {
-  position: absolute; /* Take the element out of the normal document flow [cite: 305, 306] */
-  top: 1rem; /* Offset from top [cite: 307, 308] */
-  right: 1rem; /* Offset from right [cite: 307, 308] */
-  font-size: 80%; /* Make font smaller to be less prominent [cite: 309] */
-  font-family: inherit; /* Inherit font-family from the parent [cite: 309] */
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 80%;
+  font-family: inherit;
 }
 
 img {
@@ -91,32 +67,23 @@ img {
   margin-top: 20px;
 }
 
-/* Step 3: Contact form layout */
 input, textarea, button, select {
-  /* Integrate typography by using the same font as the page */
-  font: inherit; 
+  font: inherit;
 }
 
 form {
-  /* Define a grid container for the form */
   display: grid;
-  /* Define columns where one is auto and the other takes remaining space */
   grid-template-columns: auto 1fr;
-  /* Add spacing between the form controls */
   gap: 1em;
 }
 
 label {
-  /* Make the labels grid containers themselves */
   display: grid;
-  /* Make their grid a subset of the form grid */
   grid-template-columns: subgrid;
-  /* Make the labels span a whole row */
   grid-column: 1 / -1;
 }
 
 button {
-  /* Make the submit button span a whole row */
   grid-column: 1 / -1;
   padding: 10px;
   background: #111;
@@ -130,25 +97,19 @@ button:hover {
   background: var(--color-accent);
 }
 
-/* Step 4: Projects Page Layout */
+/* Projects Page Layout */
 .projects {
-  /* Lay out the projects in a grid */
   display: grid;
-  /* Use a flexible number of columns that adapt to viewport width */
   grid-template-columns: repeat(auto-fill, minmax(15em, 1fr));
-  /* Space out the elements nicely */
-  gap: 1em; 
+  gap: 1em;
 }
 
 .projects article {
   display: grid;
-  /* Align contents across columns */
   grid-template-rows: subgrid;
-  /* Declare that each article should span 3 rows */
   grid-row: span 3;
 }
 
 .projects h2 {
-  /* Avoid excessive spacing */
   margin: 0;
 }

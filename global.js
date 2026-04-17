@@ -1,55 +1,58 @@
-console.log('IT’S ALIVE!');
+console.log("IT'S ALIVE!");
 
 function $$(selector, context = document) {
   return Array.from(context.querySelectorAll(selector));
 }
 
-// --- STEP 3: Automatic Navigation Menu ---
+// ─── BASE PATH (works locally AND on GitHub Pages) ───────────────────────────
+const BASE_PATH =
+  location.hostname === "localhost" || location.hostname === "127.0.0.1"
+    ? "/"
+    : "/portfolio/"; // ← change "portfolio" to your actual GitHub repo name
+
+// ─── STEP 3 & 2: Automatic nav menu + current-page highlighting ───────────────
 let pages = [
-  { url: '', title: 'Home' },
-  { url: 'projects/', title: 'Projects' },
-  { url: 'contact/', title: 'Contact' },
-  { url: 'resume/', title: 'Resume' },
-  { url: 'https://github.com/RyanZhang0821', title: 'GitHub' }
+  { url: "", title: "Home" },
+  { url: "projects/", title: "Projects" },
+  { url: "contact/", title: "Contact" },
+  { url: "cv/", title: "CV" },
+  { url: "https://github.com/RyanZhang0821", title: "GitHub" },
 ];
 
-let nav = document.createElement('nav');
+let nav = document.createElement("nav");
 document.body.prepend(nav);
-
-// Detect if we are local or on GitHub Pages to fix paths
-const BASE_PATH = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? '/' : '/portfolio/';
 
 for (let p of pages) {
   let url = p.url;
   let title = p.title;
 
-  // Adjust relative URLs based on environment
-  if (!url.startsWith('http')) {
+  // Prefix relative URLs with BASE_PATH so links work on every page
+  if (!url.startsWith("http")) {
     url = BASE_PATH + url;
   }
 
-  let a = document.createElement('a');
+  let a = document.createElement("a");
   a.href = url;
   a.textContent = title;
 
   // Highlight current page
-  if (a.host === location.host && a.pathname === location.pathname) {
-    a.classList.add('current');
-  }
+  a.classList.toggle(
+    "current",
+    a.host === location.host && a.pathname === location.pathname
+  );
 
   // Open external links in a new tab
   if (a.host !== location.host) {
-    a.target = '_blank';
+    a.target = "_blank";
   }
 
   nav.append(a);
 }
 
-// --- STEP 4: Dark Mode Switcher ---
+// ─── STEP 4.2 – 4.5: Dark mode switcher ──────────────────────────────────────
 document.body.insertAdjacentHTML(
-  'afterbegin',
-  `
-  <label class="color-scheme">
+  "afterbegin",
+  `<label class="color-scheme">
     Theme:
     <select>
       <option value="light dark">Automatic</option>
@@ -59,33 +62,40 @@ document.body.insertAdjacentHTML(
   </label>`
 );
 
-let select = document.querySelector('.color-scheme select');
+const select = document.querySelector(".color-scheme select");
 
-// Check if there is a saved preference
-if ("colorScheme" in localStorage) {
-  document.documentElement.style.setProperty('color-scheme', localStorage.colorScheme);
-  select.value = localStorage.colorScheme;
+// Helper – sets color-scheme on <html> AND syncs the <select>
+function setColorScheme(value) {
+  document.documentElement.style.setProperty("color-scheme", value);
+  select.value = value;
 }
 
-// Listen for theme changes
-select.addEventListener('input', function (event) {
-  console.log('color scheme changed to', event.target.value);
-  document.documentElement.style.setProperty('color-scheme', event.target.value);
-  localStorage.colorScheme = event.target.value; // Save to local storage
+// Restore saved preference on page load
+if ("colorScheme" in localStorage) {
+  setColorScheme(localStorage.colorScheme);
+}
+
+// React to user changes
+select.addEventListener("input", function (event) {
+  const value = event.target.value;
+  localStorage.colorScheme = value;
+  setColorScheme(value);
 });
 
-// --- STEP 5: Better Contact Form ---
-let form = document.querySelector('form');
-form?.addEventListener('submit', function (event) {
-  event.preventDefault(); // Stop the default form submission
-  
-  let data = new FormData(form);
+// ─── STEP 5 (Optional): Better contact form ───────────────────────────────────
+const form = document.querySelector("form");
+
+form?.addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  const data = new FormData(form);
   let url = form.action + "?";
-  
+  let params = [];
+
   for (let [name, value] of data) {
-    url += `${name}=${encodeURIComponent(value)}&`; // Encode spaces properly
+    params.push(`${name}=${encodeURIComponent(value)}`);
   }
-  
-  // Open the mail client with the encoded URL
-  location.href = url.slice(0, -1); 
+
+  url += params.join("&");
+  location.href = url;
 });
