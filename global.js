@@ -13,7 +13,7 @@ let pages = [
   { url: "", title: "Home" },
   { url: "projects/", title: "Projects" },
   { url: "contact/", title: "Contact" },
-  { url: "cv/", title: "CV" },
+  { url: "resume/", title: "CV" },
   { url: "https://github.com/RyanZhang0821", title: "GitHub" },
 ];
 
@@ -44,8 +44,9 @@ for (let p of pages) {
   nav.append(a);
 }
 
-document.body.insertAdjacentHTML(
-  "afterbegin",
+// Insert the theme switcher INSIDE the nav, at the end
+nav.insertAdjacentHTML(
+  "beforeend",
   `<label class="color-scheme">
     Theme:
     <select>

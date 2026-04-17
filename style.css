@@ -8,7 +8,6 @@ body {
   font: 100%/1.5 system-ui;
   max-width: 100ch;
   margin-inline: max(1em, (100% - 100ch) / 2);
-  position: relative;
 }
 
 h1 {
@@ -22,6 +21,7 @@ h1, h2, h3, h4, h5, h6 {
 
 nav {
   display: flex;
+  align-items: center;
   margin-bottom: 2em;
   --border-color: oklch(50% 10% 200 / 40%);
   border-bottom: 1px solid var(--border-color);
@@ -50,12 +50,13 @@ nav a:hover {
   background-color: color-mix(in oklch, var(--color-accent), canvas 85%);
 }
 
+/* Theme switcher sits at the end of the nav bar */
 .color-scheme {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
+  margin-left: auto;
   font-size: 80%;
   font-family: inherit;
+  white-space: nowrap;
+  padding: 0.5em;
 }
 
 img {
