@@ -1,0 +1,74 @@
+[
+  {
+    "title": "FITOUT Fashion App",
+    "year": 2024,
+    "image": "https://vis-society.github.io/labs/2/images/empty.svg",
+    "description": "A social fashion app featuring a digital closet, real-time synchronization, and interactive 2D layered try-on capabilities built with Firebase and SwiftUI."
+  },
+  {
+    "title": "Ocean Conservation Tech",
+    "year": 2023,
+    "image": "https://vis-society.github.io/labs/2/images/empty.svg",
+    "description": "1st Place Global Challenge winner. Engineered a CAD-simulated recycling machine designed to convert discarded fishing gear into reusable materials."
+  },
+  {
+    "title": "Home-Cook Delivery App",
+    "year": 2024,
+    "image": "https://vis-society.github.io/labs/2/images/empty.svg",
+    "description": "Top 20 Finalist globally. Co-built an MVP mobile platform connecting home cooks with local customers using Flutter and Firebase."
+  },
+  {
+    "title": "Smart Handwashing Tub",
+    "year": 2022,
+    "image": "https://vis-society.github.io/labs/2/images/empty.svg",
+    "description": "Developed ML algorithms and computer vision pipelines via Arduino to track hand motion and ensure WHO-recommended hygiene protocols."
+  },
+  {
+    "title": "Quantitative Finance Model",
+    "year": 2023,
+    "image": "https://vis-society.github.io/labs/2/images/empty.svg",
+    "description": "Developed a high-frequency machine learning framework to accurately forecast short-term equity volatility regimes."
+  },
+  {
+    "title": "3D Medical Visualizer",
+    "year": 2022,
+    "image": "https://vis-society.github.io/labs/2/images/empty.svg",
+    "description": "Built an interactive 3D prototype using Matplotlib and Open3D to render tooth displacement predictions for orthodontic treatments."
+  },
+  {
+    "title": "Campus Study Room Finder",
+    "year": 2022,
+    "image": "https://vis-society.github.io/labs/2/images/empty.svg",
+    "description": "Placeholder project: a small web app concept for checking real-time availability of group study rooms on campus."
+  },
+  {
+    "title": "Personal Finance Dashboard",
+    "year": 2023,
+    "image": "https://vis-society.github.io/labs/2/images/empty.svg",
+    "description": "Placeholder project: exploratory UI for visualizing monthly spending categories and savings goals from CSV exports."
+  },
+  {
+    "title": "Habit Tracker API",
+    "year": 2024,
+    "image": "https://vis-society.github.io/labs/2/images/empty.svg",
+    "description": "Placeholder project: REST-style API sketch for logging daily habits and streak counts with simple JSON persistence."
+  },
+  {
+    "title": "Recipe Ingredient Parser",
+    "year": 2022,
+    "image": "https://vis-society.github.io/labs/2/images/empty.svg",
+    "description": "Placeholder project: prototype script to normalize ingredient lines from unstructured recipe text into structured fields."
+  },
+  {
+    "title": "Bike Route Heatmap",
+    "year": 2023,
+    "image": "https://vis-society.github.io/labs/2/images/empty.svg",
+    "description": "Placeholder project: notebook experiment plotting preferred cycling routes from anonymized GPS samples."
+  },
+  {
+    "title": "Markdown Course Notes Site",
+    "year": 2024,
+    "image": "https://vis-society.github.io/labs/2/images/empty.svg",
+    "description": "Placeholder project: static site generator workflow for turning lecture notes in Markdown into searchable HTML pages."
+  }
+]

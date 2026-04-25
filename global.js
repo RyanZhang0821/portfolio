@@ -90,3 +90,35 @@ form?.addEventListener("submit", function (event) {
   url += params.join("&");
   location.href = url;
 });
+
+export async function fetchJSON(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+export function renderProjects(
+  projects,
+  containerElement,
+  headingLevel = "h2"
+) {
+  containerElement.replaceChildren();
+  for (const project of projects) {
+    const article = document.createElement("article");
+    const heading = document.createElement(headingLevel);
+    heading.textContent = project.title ?? "";
+    const img = document.createElement("img");
+    img.src = project.image ?? "";
+    img.alt = project.title ?? "";
+    const p = document.createElement("p");
+    p.textContent = project.description ?? "";
+    article.append(heading, img, p);
+    containerElement.append(article);
+  }
+}
+
+export async function fetchGitHubData(username) {
+  return fetchJSON(`https://api.github.com/users/${encodeURIComponent(username)}`);
+}
