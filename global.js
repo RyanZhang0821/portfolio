@@ -107,14 +107,28 @@ export function renderProjects(
   containerElement.replaceChildren();
   for (const project of projects) {
     const article = document.createElement("article");
+
     const heading = document.createElement(headingLevel);
     heading.textContent = project.title ?? "";
+
     const img = document.createElement("img");
     img.src = project.image ?? "";
     img.alt = project.title ?? "";
+
+    // Wrap description and year in the same <div> so they share the grid cell
+    const textWrap = document.createElement("div");
+    textWrap.classList.add("project-text");
+
     const p = document.createElement("p");
     p.textContent = project.description ?? "";
-    article.append(heading, img, p);
+
+    const yearEl = document.createElement("p");
+    yearEl.classList.add("project-year");
+    yearEl.textContent = project.year ? `c. ${project.year}` : "";
+
+    textWrap.append(p, yearEl);
+
+    article.append(heading, img, textWrap);
     containerElement.append(article);
   }
 }
