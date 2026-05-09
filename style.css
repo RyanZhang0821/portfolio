@@ -214,3 +214,138 @@ button:hover {
     align-self: center;
   }
 }
+/* ============================================================
+   LAB 6 — Meta page styles
+   ============================================================ */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8em, 1fr));
+  gap: 1em 1.5em;
+  padding: 1em 1.25em;
+  border: 1px solid color-mix(in oklch, canvastext, canvas 85%);
+  border-radius: 0.5em;
+  margin: 0 0 1.5em 0;
+}
+
+.stats > dt {
+  grid-row: 1;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: color-mix(in oklch, canvastext, canvas 45%);
+  margin: 0;
+}
+
+.stats > dd {
+  grid-row: 2;
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+#chart {
+  margin-block: 1em;
+}
+
+#chart svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.gridlines line {
+  stroke: color-mix(in oklch, canvastext, canvas 85%);
+  stroke-opacity: 0.6;
+  shape-rendering: crispEdges;
+}
+
+.gridlines path {
+  display: none;
+}
+
+circle {
+  transition: 200ms;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+circle:hover {
+  transform: scale(1.5);
+}
+
+circle.selected {
+  fill: #ff6b6b !important;
+}
+
+dl.info {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25em 0.75em;
+  margin: 0;
+  transition-duration: 500ms;
+  transition-property: opacity, visibility;
+}
+
+dl.info dt {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: color-mix(in oklch, canvastext, canvas 45%);
+  align-self: center;
+}
+
+dl.info dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+dl.info[hidden]:not(:hover, :focus-within) {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.tooltip {
+  position: fixed;
+  top: 1em;
+  left: 1em;
+  padding: 0.75em 1em;
+  background: color-mix(in oklch, canvas, transparent 15%);
+  backdrop-filter: blur(6px);
+  border: 1px solid color-mix(in oklch, canvastext, canvas 80%);
+  border-radius: 0.5em;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  z-index: 1000;
+  max-width: 22em;
+}
+
+.tooltip a {
+  color: var(--color-accent);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+}
+
+@keyframes marching-ants {
+  to {
+    stroke-dashoffset: -8;
+  }
+}
+
+.selection {
+  fill-opacity: 0.1;
+  stroke: black;
+  stroke-opacity: 0.7;
+  stroke-dasharray: 5 3;
+  animation: marching-ants 2s linear infinite;
+}
+
+#selection-count {
+  margin-top: 1em;
+  font-weight: 500;
+}
+
+#language-breakdown {
+  margin-top: 0.5em;
+}
