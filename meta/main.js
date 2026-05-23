@@ -1,281 +1,427 @@
-import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.9.0/+esm";
-
-async function loadData() {
-  const data = await d3.csv("loc.csv", (row) => ({
-    ...row,
-    line: Number(row.line),
-    depth: Number(row.depth),
-    length: Number(row.length),
-    date: new Date(row.date + "T00:00" + row.timezone),
-    datetime: new Date(row.datetime),
-  }));
-  return data;
+html {
+  color-scheme: light dark;
+  --color-accent: oklch(65% 50% 0);
+  accent-color: var(--color-accent);
 }
 
-function processCommits(data) {
-  return d3
-    .groups(data, (d) => d.commit)
-    .map(([commit, lines]) => {
-      const first = lines[0];
-      const { author, date, time, timezone, datetime } = first;
-
-      const ret = {
-        id: commit,
-        url: "https://github.com/RyanZhang0821/portfolio/commit/" + commit,
-        author,
-        date,
-        time,
-        timezone,
-        datetime,
-        hourFrac: datetime.getHours() + datetime.getMinutes() / 60,
-        totalLines: lines.length,
-      };
-
-      Object.defineProperty(ret, "lines", {
-        value: lines,
-        configurable: false,
-        writable: false,
-        enumerable: false,
-      });
-
-      return ret;
-    });
+body {
+  font: 100%/1.5 system-ui;
+  max-width: 100ch;
+  margin-inline: max(1em, (100% - 100ch) / 2);
 }
 
-function renderCommitInfo(data, commits) {
-  const dl = d3.select("#stats").append("dl").attr("class", "stats");
-
-  dl.append("dt").text("Commits");
-  dl.append("dd").text(commits.length);
-
-  const numFiles = d3.group(data, (d) => d.file).size;
-  dl.append("dt").text("Files");
-  dl.append("dd").text(numFiles);
-
-  dl.append("dt").html('Total <abbr title="Lines of code">LOC</abbr>');
-  dl.append("dd").text(data.length);
-
-  const maxDepth = d3.max(data, (d) => d.depth);
-  dl.append("dt").text("Max depth");
-  dl.append("dd").text(maxDepth);
-
-  const longestLine = d3.max(data, (d) => d.length);
-  dl.append("dt").text("Longest line");
-  dl.append("dd").text(longestLine);
-
-  const fileLengths = d3.rollups(
-    data,
-    (v) => d3.max(v, (v) => v.line),
-    (d) => d.file
-  );
-  const maxLines = d3.max(fileLengths, (d) => d[1]);
-  dl.append("dt").text("Max lines");
-  dl.append("dd").text(maxLines);
-
-  const workByPeriod = d3.rollups(
-    data,
-    (v) => v.length,
-    (d) =>
-      new Date(d.datetime).toLocaleString("en", { dayPeriod: "short" })
-  );
-  const maxPeriod = d3.greatest(workByPeriod, (d) => d[1])?.[0];
-  dl.append("dt").text("Most active");
-  dl.append("dd").text(maxPeriod ?? "—");
+h1 {
+  font-size: 400%;
 }
 
-let xScale, yScale;
-
-function renderScatterPlot(data, commits) {
-  const width = 1000;
-  const height = 600;
-  const margin = { top: 10, right: 10, bottom: 30, left: 40 };
-
-  const usableArea = {
-    top: margin.top,
-    right: width - margin.right,
-    bottom: height - margin.bottom,
-    left: margin.left,
-    width: width - margin.left - margin.right,
-    height: height - margin.top - margin.bottom,
-  };
-
-  const svg = d3
-    .select("#chart")
-    .append("svg")
-    .attr("viewBox", `0 0 ${width} ${height}`)
-    .style("overflow", "visible");
-
-  xScale = d3
-    .scaleTime()
-    .domain(d3.extent(commits, (d) => d.datetime))
-    .range([usableArea.left, usableArea.right])
-    .nice();
-
-  yScale = d3
-    .scaleLinear()
-    .domain([0, 24])
-    .range([usableArea.bottom, usableArea.top]);
-
-  const [minLines, maxLines] = d3.extent(commits, (d) => d.totalLines);
-  const rScale = d3
-    .scaleSqrt()
-    .domain([minLines, maxLines])
-    .range([3, 28]);
-
-  const gridlines = svg
-    .append("g")
-    .attr("class", "gridlines")
-    .attr("transform", `translate(${usableArea.left}, 0)`);
-
-  gridlines.call(
-    d3.axisLeft(yScale).tickFormat("").tickSize(-usableArea.width)
-  );
-
-  const xAxis = d3.axisBottom(xScale);
-  const yAxis = d3
-    .axisLeft(yScale)
-    .tickFormat((d) => String(d % 24).padStart(2, "0") + ":00");
-
-  svg
-    .append("g")
-    .attr("transform", `translate(0, ${usableArea.bottom})`)
-    .call(xAxis);
-
-  svg
-    .append("g")
-    .attr("transform", `translate(${usableArea.left}, 0)`)
-    .call(yAxis);
-
-  const sortedCommits = d3.sort(commits, (d) => -d.totalLines);
-
-  const dots = svg.append("g").attr("class", "dots");
-
-  dots
-    .selectAll("circle")
-    .data(sortedCommits)
-    .join("circle")
-    .attr("cx", (d) => xScale(d.datetime))
-    .attr("cy", (d) => yScale(d.hourFrac))
-    .attr("r", (d) => rScale(d.totalLines))
-    .attr("fill", "steelblue")
-    .style("fill-opacity", 0.7)
-    .on("mouseenter", (event, commit) => {
-      d3.select(event.currentTarget).style("fill-opacity", 1);
-      renderTooltipContent(commit);
-      updateTooltipVisibility(true);
-      updateTooltipPosition(event);
-    })
-    .on("mousemove", (event) => {
-      updateTooltipPosition(event);
-    })
-    .on("mouseleave", (event) => {
-      d3.select(event.currentTarget).style("fill-opacity", 0.7);
-      updateTooltipVisibility(false);
-    });
-
-  createBrushSelector(svg);
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.1;
+  text-wrap: balance;
 }
 
-function renderTooltipContent(commit) {
-  const link = document.getElementById("commit-link");
-  const date = document.getElementById("commit-date");
-  const time = document.getElementById("commit-time");
-  const author = document.getElementById("commit-author");
-  const linesEl = document.getElementById("commit-lines");
-
-  if (Object.keys(commit).length === 0) return;
-
-  link.href = commit.url;
-  link.textContent = commit.id;
-  date.textContent = commit.datetime?.toLocaleString("en", {
-    dateStyle: "full",
-  });
-  time.textContent = commit.datetime?.toLocaleString("en", {
-    timeStyle: "short",
-  });
-  author.textContent = commit.author ?? "—";
-  linesEl.textContent = commit.totalLines;
+nav {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2em;
+  --border-color: oklch(50% 10% 200 / 40%);
+  border-bottom: 1px solid var(--border-color);
 }
 
-function updateTooltipVisibility(isVisible) {
-  const tooltip = document.getElementById("commit-tooltip");
-  tooltip.hidden = !isVisible;
+nav ul {
+  display: contents;
 }
 
-function updateTooltipPosition(event) {
-  const tooltip = document.getElementById("commit-tooltip");
-  tooltip.style.left = `${event.clientX + 12}px`;
-  tooltip.style.top = `${event.clientY + 12}px`;
+nav a {
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+  text-align: center;
+  padding: 0.5em;
 }
 
-function createBrushSelector(svg) {
-  svg.call(d3.brush().on("start brush end", brushed));
-  svg.selectAll(".dots, .overlay ~ *").raise();
+nav a.current {
+  border-bottom: 0.4em solid var(--border-color);
+  padding-bottom: 0.1em;
 }
 
-function isCommitSelected(selection, commit) {
-  if (!selection) return false;
-  const [[x0, y0], [x1, y1]] = selection;
-  const cx = xScale(commit.datetime);
-  const cy = yScale(commit.hourFrac);
-  return cx >= x0 && cx <= x1 && cy >= y0 && cy <= y1;
+nav a:hover {
+  border-bottom: 0.4em solid var(--color-accent);
+  padding-bottom: 0.1em;
+  background-color: color-mix(in oklch, var(--color-accent), canvas 85%);
 }
 
-function brushed(event) {
-  const selection = event.selection;
-  d3.selectAll("circle").classed("selected", (d) =>
-    isCommitSelected(selection, d)
-  );
-  renderSelectionCount(selection);
-  renderLanguageBreakdown(selection);
+/* Theme switcher sits at the end of the nav bar */
+.color-scheme {
+  margin-left: auto;
+  font-size: 80%;
+  font-family: inherit;
+  white-space: nowrap;
+  padding: 0.5em;
 }
 
-function renderSelectionCount(selection) {
-  const selectedCommits = selection
-    ? commits.filter((d) => isCommitSelected(selection, d))
-    : [];
-
-  const countElement = document.querySelector("#selection-count");
-  countElement.textContent = `${
-    selectedCommits.length || "No"
-  } commits selected`;
-
-  return selectedCommits;
+img {
+  max-width: 100%;
+  border-radius: 10px;
+  margin-top: 20px;
 }
 
-function renderLanguageBreakdown(selection) {
-  const selectedCommits = selection
-    ? commits.filter((d) => isCommitSelected(selection, d))
-    : [];
+input, textarea, button, select {
+  font: inherit;
+}
 
-  const container = document.getElementById("language-breakdown");
+form {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1em;
+}
 
-  if (selectedCommits.length === 0) {
-    container.innerHTML = "";
-    return;
+label {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+}
+
+button {
+  grid-column: 1 / -1;
+  padding: 10px;
+  background-color: canvastext;
+  color: canvas;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: var(--color-accent);
+  color: canvas;
+}
+
+/* ---------- Projects grid ---------- */
+.projects {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15em, 1fr));
+  gap: 1em;
+}
+
+.projects article {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 3;
+}
+
+.projects h2 {
+  margin: 0;
+}
+
+/* The text wrapper holds description + year so they share one grid cell */
+.project-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.project-year {
+  margin: 0.5em 0 0 0;
+  font-family: Baskerville, "Hoefler Text", Georgia, serif;
+  font-variant-numeric: oldstyle-nums;
+  font-style: italic;
+  color: color-mix(in oklch, canvastext, canvas 35%);
+}
+
+/* ---------- Pie chart + legend container ---------- */
+.container {
+  display: flex;
+  align-items: center;
+  gap: 2em;
+  margin-block: 2em;
+}
+
+#projects-pie-plot {
+  max-width: 20em;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+#projects-pie-plot path {
+  cursor: pointer;
+  transition: 300ms;
+  /* Use the wedge's own --color when set, else fill attribute */
+  fill: var(--color, currentColor);
+}
+
+/* Fade non-hovered wedges when the SVG contains a hovered path */
+#projects-pie-plot:has(path:hover) path:not(:hover) {
+  opacity: 0.5;
+}
+
+/* ---------- Legend ---------- */
+.legend {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9em, 1fr));
+  gap: 0.5em;
+  list-style: none;
+  margin: 0;
+  padding: 1em;
+  border: 1px solid color-mix(in oklch, canvastext, canvas 80%);
+  border-radius: 0.5em;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
+.swatch {
+  display: inline-block;
+  width: 1em;
+  aspect-ratio: 1 / 1;
+  background-color: var(--color);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ---------- Selected wedge / legend item ---------- */
+.selected {
+  --color: oklch(60% 45% 0) !important;
+}
+
+.selected:is(path) {
+  fill: var(--color);
+}
+
+/* ---------- Search bar ---------- */
+.searchBar {
+  display: block;
+  width: 100%;
+  padding: 0.5em 0.75em;
+  margin-block: 1em;
+  border: 1px solid color-mix(in oklch, canvastext, canvas 80%);
+  border-radius: 0.5em;
+  font: inherit;
+}
+
+/* ---------- Responsive: stack pie + legend on narrow screens ---------- */
+@media (max-width: 600px) {
+  .container {
+    flex-direction: column;
+    align-items: stretch;
   }
-
-  const lines = selectedCommits.flatMap((d) => d.lines);
-
-  const breakdown = d3.rollup(
-    lines,
-    (v) => v.length,
-    (d) => d.type
-  );
-
-  container.innerHTML = "";
-  for (const [language, count] of breakdown) {
-    const proportion = count / lines.length;
-    const formatted = d3.format(".1~%")(proportion);
-    container.innerHTML += `
-      <dt>${language}</dt>
-      <dd>${count} lines (${formatted})</dd>
-    `;
+  #projects-pie-plot {
+    max-width: 100%;
+    align-self: center;
   }
 }
+/* ============================================================
+   LAB 6 — Meta page styles
+   ============================================================ */
 
-let data = await loadData();
-let commits = processCommits(data);
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8em, 1fr));
+  gap: 1em 1.5em;
+  padding: 1em 1.25em;
+  border: 1px solid color-mix(in oklch, canvastext, canvas 85%);
+  border-radius: 0.5em;
+  margin: 0 0 1.5em 0;
+}
 
-renderCommitInfo(data, commits);
-renderScatterPlot(data, commits);
+.stats > dt {
+  grid-row: 1;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: color-mix(in oklch, canvastext, canvas 45%);
+  margin: 0;
+}
+
+.stats > dd {
+  grid-row: 2;
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+#chart {
+  margin-block: 1em;
+}
+
+#chart svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.gridlines line {
+  stroke: color-mix(in oklch, canvastext, canvas 85%);
+  stroke-opacity: 0.6;
+  shape-rendering: crispEdges;
+}
+
+.gridlines path {
+  display: none;
+}
+
+circle {
+  transition: 200ms;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+circle:hover {
+  transform: scale(1.5);
+}
+
+circle.selected {
+  fill: #ff6b6b !important;
+}
+
+dl.info {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25em 0.75em;
+  margin: 0;
+  transition-duration: 500ms;
+  transition-property: opacity, visibility;
+}
+
+dl.info dt {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: color-mix(in oklch, canvastext, canvas 45%);
+  align-self: center;
+}
+
+dl.info dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+dl.info[hidden]:not(:hover, :focus-within) {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.tooltip {
+  position: fixed;
+  top: 1em;
+  left: 1em;
+  padding: 0.75em 1em;
+  background: color-mix(in oklch, canvas, transparent 15%);
+  backdrop-filter: blur(6px);
+  border: 1px solid color-mix(in oklch, canvastext, canvas 80%);
+  border-radius: 0.5em;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  z-index: 1000;
+  max-width: 22em;
+}
+
+.tooltip a {
+  color: var(--color-accent);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+}
+
+@keyframes marching-ants {
+  to {
+    stroke-dashoffset: -8;
+  }
+}
+
+.selection {
+  fill-opacity: 0.1;
+  stroke: black;
+  stroke-opacity: 0.7;
+  stroke-dasharray: 5 3;
+  animation: marching-ants 2s linear infinite;
+}
+
+#selection-count {
+  margin-top: 1em;
+  font-weight: 500;
+}
+
+#language-breakdown {
+  margin-top: 0.5em;
+}
+
+/* ============================================================
+   LAB 8 — Animation & Scrollytelling
+   ============================================================ */
+
+/* Entry transition: new circles animate up from r: 0 */
+circle {
+  @starting-style {
+    r: 0;
+  }
+}
+
+/* Two-column scrollytelling layout: story scrolls, plot sticks */
+#scrolly-1 {
+  position: relative;
+  display: flex;
+  gap: 1rem;
+}
+
+#scrolly-1 > * {
+  flex: 1;
+}
+
+#scatter-story {
+  position: relative;
+}
+
+#scatter-plot {
+  position: sticky;
+  top: 0;
+  left: 0;
+  bottom: auto;
+  height: 50vh;
+}
+
+/* Space each commit step out so scrolling triggers one at a time */
+.step {
+  padding-bottom: 50vh;
+}
+
+/* Unit visualization of files (the "race for the biggest file") */
+#files {
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  margin-block: 2em;
+}
+
+#files > div {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+#files dt {
+  grid-column: 1;
+}
+
+#files dd {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  align-content: start;
+  gap: 0.15em;
+  padding-top: 0.6em;
+  margin-left: 0;
+}
+
+/* One dot per line of code, colored by technology */
+.loc {
+  display: flex;
+  width: 0.5em;
+  aspect-ratio: 1;
+  background: var(--color, steelblue);
+  border-radius: 50%;
+}
